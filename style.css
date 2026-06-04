@@ -1,0 +1,323 @@
+/*
+ * RP Explorer — Mobile-first styles
+ *
+ * Design approach: base rules target small touchscreens (large tap targets,
+ * full-width panel, comfortable spacing). A single min-width media query
+ * upgrades the layout for tablets / desktops. SillyTavern theme variables are
+ * used so the extension matches the user's chosen theme.
+ */
+
+:root {
+    --rpx-radius: 12px;
+    --rpx-gap: 12px;
+    --rpx-tap: 44px; /* minimum comfortable touch target */
+    --rpx-accent: var(--SmartThemeQuoteColor, #6c8cff);
+    --rpx-bg: var(--SmartThemeBlurTintColor, rgba(20, 20, 28, 0.92));
+    --rpx-fg: var(--SmartThemeBodyColor, #e9e9ef);
+    --rpx-border: var(--SmartThemeBorderColor, rgba(255, 255, 255, 0.15));
+    --rpx-muted: color-mix(in srgb, var(--rpx-fg) 55%, transparent);
+}
+
+/* ----------------------------------------------------------------- *
+ *  FLOATING DRAGGABLE BUTTON (FAB)
+ * ----------------------------------------------------------------- */
+.rpx-fab {
+    position: fixed;
+    right: 16px;
+    bottom: 96px;
+    z-index: 4000;
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--rpx-accent);
+    color: #fff;
+    font-size: 22px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+    cursor: grab;
+    touch-action: none; /* let JS handle drag gestures */
+    user-select: none;
+    -webkit-user-select: none;
+    transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.rpx-fab:active { transform: scale(0.94); }
+.rpx-fab.rpx-dragging { cursor: grabbing; box-shadow: 0 8px 22px rgba(0, 0, 0, 0.6); }
+
+/* ----------------------------------------------------------------- *
+ *  PANEL  (full-screen sheet on mobile, side panel on desktop)
+ * ----------------------------------------------------------------- */
+.rpx-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 4001;
+    display: none;
+    flex-direction: column;
+    background: var(--rpx-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: var(--rpx-fg);
+    overflow: hidden;
+}
+.rpx-panel.rpx-open { display: flex; }
+
+.rpx-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--rpx-gap);
+    padding: 14px 16px;
+    padding-top: max(14px, env(safe-area-inset-top));
+    border-bottom: 1px solid var(--rpx-border);
+}
+.rpx-panel-title { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.rpx-panel-header-actions { display: flex; align-items: center; gap: 8px; }
+
+/* ----------------------------------------------------------------- *
+ *  TABS
+ * ----------------------------------------------------------------- */
+.rpx-tabs {
+    display: flex;
+    gap: 6px;
+    padding: 8px;
+    border-bottom: 1px solid var(--rpx-border);
+}
+.rpx-tab {
+    flex: 1;
+    min-height: var(--rpx-tap);
+    border: none;
+    border-radius: var(--rpx-radius);
+    background: transparent;
+    color: var(--rpx-muted);
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+}
+.rpx-tab.rpx-active { background: var(--rpx-accent); color: #fff; }
+
+.rpx-tab-body {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: var(--rpx-gap);
+    padding-bottom: max(var(--rpx-gap), env(safe-area-inset-bottom));
+}
+
+/* ----------------------------------------------------------------- *
+ *  BUTTONS & INPUTS  (large, finger-friendly)
+ * ----------------------------------------------------------------- */
+.rpx-btn {
+    min-height: var(--rpx-tap);
+    padding: 0 16px;
+    border: 1px solid var(--rpx-border);
+    border-radius: var(--rpx-radius);
+    background: transparent;
+    color: var(--rpx-fg);
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+.rpx-btn-primary { background: var(--rpx-accent); border-color: transparent; color: #fff; }
+.rpx-btn:disabled { opacity: 0.6; cursor: default; }
+
+.rpx-icon-btn {
+    min-width: var(--rpx-tap);
+    min-height: var(--rpx-tap);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: var(--rpx-radius);
+    background: transparent;
+    color: var(--rpx-fg);
+    font-size: 1rem;
+    cursor: pointer;
+}
+.rpx-icon-btn:active { background: rgba(255, 255, 255, 0.08); }
+
+.rpx-input {
+    width: 100%;
+    min-height: var(--rpx-tap);
+    padding: 10px 12px;
+    border: 1px solid var(--rpx-border);
+    border-radius: var(--rpx-radius);
+    background: rgba(0, 0, 0, 0.25);
+    color: var(--rpx-fg);
+    font-size: 16px; /* >=16px prevents iOS zoom-on-focus */
+    box-sizing: border-box;
+}
+textarea.rpx-input { min-height: 72px; resize: vertical; }
+
+.rpx-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.rpx-field > span { font-size: 0.85rem; color: var(--rpx-muted); }
+.rpx-row { display: flex; gap: 10px; }
+.rpx-row .rpx-field { flex: 1; }
+
+.rpx-muted { color: var(--rpx-muted); font-size: 0.85rem; }
+.rpx-empty {
+    text-align: center;
+    color: var(--rpx-muted);
+    padding: 24px 12px;
+    font-size: 0.95rem;
+}
+
+/* ----------------------------------------------------------------- *
+ *  GALLERY
+ * ----------------------------------------------------------------- */
+.rpx-gallery-toolbar { margin-bottom: var(--rpx-gap); }
+.rpx-category { margin-bottom: 18px; }
+.rpx-category-title {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--rpx-muted);
+    margin-bottom: 8px;
+}
+
+.rpx-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--rpx-border);
+    border-radius: var(--rpx-radius);
+    overflow: hidden;
+    margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.03);
+}
+.rpx-card-images {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    background: rgba(0, 0, 0, 0.3);
+}
+.rpx-card-images img {
+    height: 120px;
+    width: auto;
+    object-fit: cover;
+    flex: 0 0 auto;
+}
+.rpx-no-image {
+    height: 80px;
+    align-items: center;
+    justify-content: center;
+    color: var(--rpx-muted);
+    font-size: 1.6rem;
+}
+.rpx-card-body { padding: 12px; }
+.rpx-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.rpx-card-name { font-weight: 700; font-size: 1.05rem; }
+.rpx-card-meta { color: var(--rpx-muted); font-size: 0.85rem; }
+.rpx-card-rel { margin-top: 6px; color: var(--rpx-accent); font-size: 0.9rem; }
+.rpx-card-info { margin-top: 6px; font-size: 0.9rem; line-height: 1.4; }
+.rpx-card-dynamic {
+    margin-top: 8px;
+    padding: 8px;
+    border-radius: 8px;
+    background: rgba(108, 140, 255, 0.12);
+    font-size: 0.88rem;
+}
+.rpx-card-actions { display: flex; justify-content: flex-end; gap: 4px; margin-top: 8px; }
+
+.rpx-rel-list { display: flex; flex-direction: column; gap: 6px; }
+.rpx-rel-item {
+    padding: 10px;
+    border: 1px solid var(--rpx-border);
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+/* ----------------------------------------------------------------- *
+ *  DIARY
+ * ----------------------------------------------------------------- */
+.rpx-diary-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: var(--rpx-radius);
+    background: rgba(255, 200, 0, 0.1);
+    color: var(--rpx-fg);
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+}
+.rpx-diary-compose { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.rpx-diary-list { display: flex; flex-direction: column; gap: 10px; }
+.rpx-diary-entry {
+    border: 1px solid var(--rpx-border);
+    border-radius: var(--rpx-radius);
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+}
+.rpx-diary-entry-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.rpx-diary-entry-title { font-weight: 700; }
+.rpx-diary-entry-actions { display: flex; align-items: center; gap: 4px; }
+.rpx-diary-entry-date { color: var(--rpx-muted); font-size: 0.78rem; }
+.rpx-diary-entry-body { margin-top: 8px; white-space: pre-wrap; line-height: 1.45; font-size: 0.92rem; }
+
+/* ----------------------------------------------------------------- *
+ *  MODAL  (add/edit character)
+ * ----------------------------------------------------------------- */
+.rpx-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 4002;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+}
+.rpx-modal {
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: var(--rpx-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+    padding: 18px;
+    padding-bottom: max(18px, env(safe-area-inset-bottom));
+}
+.rpx-modal-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 14px; }
+.rpx-modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; }
+.rpx-file { padding: 8px 0; }
+.rpx-upload-hint { margin-top: 4px; }
+
+/* ----------------------------------------------------------------- *
+ *  SETTINGS DRAWER
+ * ----------------------------------------------------------------- */
+.rpx-settings-desc { display: block; margin: 6px 0 10px; opacity: 0.8; }
+.rpx-settings-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.rpx-settings-row { display: flex; gap: 12px; }
+.rpx-settings-row > div { flex: 1; }
+
+/* ----------------------------------------------------------------- *
+ *  TABLET / DESKTOP UPGRADE
+ * ----------------------------------------------------------------- */
+@media (min-width: 768px) {
+    .rpx-panel {
+        inset: auto;
+        top: 50%;
+        right: 24px;
+        transform: translateY(-50%);
+        width: 420px;
+        height: min(80vh, 720px);
+        border: 1px solid var(--rpx-border);
+        border-radius: 18px;
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+    }
+    .rpx-modal-overlay { align-items: center; }
+    .rpx-modal { max-width: 480px; border-radius: 18px; }
+}
+
+/* Wand menu item icon spacing parity with native items. */
+#rpx-wand-button { cursor: pointer; }

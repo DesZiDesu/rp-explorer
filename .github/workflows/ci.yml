@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    name: Validate extension
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show Node version
+        run: node --version
+
+      - name: Syntax-check all JavaScript
+        run: |
+          set -e
+          shopt -s globstar nullglob
+          files=(index.js src/**/*.js)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No JS files found"; exit 1
+          fi
+          for f in "${files[@]}"; do
+            echo "Checking $f"
+            node --check "$f"
+          done
+
+      - name: Validate JSON files
+        run: |
+          set -e
+          for f in manifest.json; do
+            echo "Validating $f"
+            node -e "JSON.parse(require('fs').readFileSync('$f','utf8'))"
+          done
+
+      - name: Verify manifest required fields
+        run: |
+          node -e "
+            const m = require('./manifest.json');
+            const required = ['display_name', 'js'];
+            const missing = required.filter(k => !(k in m));
+            if (missing.length) {
+              console.error('manifest.json missing required fields:', missing.join(', '));
+              process.exit(1);
+            }
+            console.log('manifest.json OK:', m.display_name, 'v' + (m.version || '?'));
+          "
+
+      - name: Check referenced files exist
+        run: |
+          node -e "
+            const fs = require('fs');
+            const m = require('./manifest.json');
+            const refs = [m.js, m.css].filter(Boolean);
+            const missing = refs.filter(p => !fs.existsSync(p));
+            if (missing.length) {
+              console.error('manifest.json references missing files:', missing.join(', '));
+              process.exit(1);
+            }
+            console.log('All manifest-referenced files exist:', refs.join(', '));
+          "

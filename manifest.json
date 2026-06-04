@@ -1,0 +1,13 @@
+{
+    "display_name": "RP Explorer",
+    "loading_order": 100,
+    "requires": [],
+    "optional": [],
+    "dependencies": [],
+    "js": "index.js",
+    "css": "style.css",
+    "author": "deszidesu",
+    "version": "1.0.0",
+    "homePage": "https://github.com/deszidesu/rp-explorer",
+    "auto_update": true
+}
