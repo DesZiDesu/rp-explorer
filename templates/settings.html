@@ -1,0 +1,64 @@
+<div class="rpx-settings extension_settings">
+    <div class="inline-drawer">
+        <div class="inline-drawer-toggle inline-drawer-header">
+            <b><i class="fa-solid fa-compass"></i> RP Explorer</b>
+            <div class="inline-drawer-icon fa-solid fa-circle-chevron-down down"></div>
+        </div>
+
+        <div class="inline-drawer-content">
+            <small class="rpx-settings-desc">
+                Dynamic roleplay memory: a per-chat relationship gallery, a private
+                diary, and an auto-updating context bank powered by a single API call.
+            </small>
+
+            <div class="rpx-settings-actions">
+                <button id="rpx-open-panel" class="menu_button" type="button">
+                    <i class="fa-solid fa-compass"></i> Open Panel
+                </button>
+                <button id="rpx-update-now-settings" class="menu_button" type="button">
+                    <i class="fa-solid fa-rotate"></i> Update Now
+                </button>
+            </div>
+
+            <hr>
+            <h4>API & Model</h4>
+            <label class="checkbox_label" for="rpx-use-custom-api">
+                <input id="rpx-use-custom-api" type="checkbox">
+                <span>Use a custom OpenAI-compatible endpoint (otherwise inherit SillyTavern's active API)</span>
+            </label>
+            <label for="rpx-custom-url">Endpoint URL</label>
+            <input id="rpx-custom-url" class="text_pole" type="text" placeholder="https://api.openai.com/v1">
+            <label for="rpx-custom-key">API Key</label>
+            <input id="rpx-custom-key" class="text_pole" type="password" placeholder="sk-…">
+            <label for="rpx-custom-model">Model</label>
+            <input id="rpx-custom-model" class="text_pole" type="text" placeholder="gpt-4o-mini">
+            <div class="rpx-settings-row">
+                <div>
+                    <label for="rpx-custom-maxtokens">Max tokens</label>
+                    <input id="rpx-custom-maxtokens" class="text_pole" type="number" min="128" step="64">
+                </div>
+                <div>
+                    <label for="rpx-custom-temp">Temperature</label>
+                    <input id="rpx-custom-temp" class="text_pole" type="number" min="0" max="2" step="0.1">
+                </div>
+            </div>
+
+            <hr>
+            <h4>Behaviour</h4>
+            <label class="checkbox_label" for="rpx-inherit-jb">
+                <input id="rpx-inherit-jb" type="checkbox">
+                <span>Inherit current Jailbreak / post-history instructions</span>
+            </label>
+            <label class="checkbox_label" for="rpx-inject-memory">
+                <input id="rpx-inject-memory" type="checkbox">
+                <span>Let the AI read the memory bank during roleplay</span>
+            </label>
+            <label class="checkbox_label" for="rpx-auto-enabled">
+                <input id="rpx-auto-enabled" type="checkbox">
+                <span>Auto-update the memory bank</span>
+            </label>
+            <label for="rpx-auto-interval">Auto-update every X messages</label>
+            <input id="rpx-auto-interval" class="text_pole" type="number" min="1" step="1">
+        </div>
+    </div>
+</div>
