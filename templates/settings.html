@@ -26,6 +26,13 @@
                 <input id="rpx-use-custom-api" type="checkbox">
                 <span>Use a custom OpenAI-compatible endpoint (otherwise inherit SillyTavern's active API)</span>
             </label>
+            <small class="rpx-settings-desc">
+                <b>Recommended:</b> leave this <b>unchecked</b> to reuse your current
+                SillyTavern connection (the Custom OpenAI profile you already set up).
+                A direct custom endpoint is called from the browser and is often
+                blocked by CORS on mobile — if it fails, the extension automatically
+                falls back to your active SillyTavern API.
+            </small>
             <label for="rpx-custom-url">Endpoint URL</label>
             <input id="rpx-custom-url" class="text_pole" type="text" placeholder="https://api.openai.com/v1">
             <label for="rpx-custom-key">API Key</label>

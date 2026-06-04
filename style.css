@@ -23,9 +23,9 @@
  * ----------------------------------------------------------------- */
 .rpx-fab {
     position: fixed;
-    right: 16px;
-    bottom: 96px;
-    z-index: 4000;
+    right: 14px;
+    bottom: 110px;
+    z-index: 99999;
     width: 52px;
     height: 52px;
     display: flex;

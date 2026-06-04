@@ -22,26 +22,64 @@ let activeTab = 'gallery';
  * ------------------------------------------------------------------ */
 
 export async function buildUI() {
-    await injectButton();
+    ensureButton();
     await injectPanel();
     // Re-render the open tab whenever an update lands.
     document.addEventListener('rpExplorer:updated', () => {
         if (panelEl?.classList.contains('rpx-open')) renderActiveTab();
     });
+    // Some mobile/theme layouts re-render the body after extensions load,
+    // which can drop our button. Re-assert it a few times after startup.
+    [400, 1500, 4000].forEach((ms) => setTimeout(ensureButton, ms));
 }
 
 /* ------------------------------------------------------------------ *
  *  FLOATING DRAGGABLE BUTTON
  * ------------------------------------------------------------------ */
 
-async function injectButton() {
-    if (document.getElementById('rpx-fab')) return;
+/**
+ * Create the floating button if it is missing. Critical layout styles are
+ * applied INLINE (not just via the stylesheet) so the button is guaranteed
+ * visible and on top even if the CSS file is overridden by a theme or fails
+ * to load. Safe to call repeatedly.
+ */
+export function ensureButton() {
+    if (!document.body) return;
+    const existing = document.getElementById('rpx-fab');
+    if (existing) {
+        // Re-append if it somehow got detached, but keep its position.
+        if (!existing.isConnected) document.body.appendChild(existing);
+        return;
+    }
 
     buttonEl = document.createElement('div');
     buttonEl.id = 'rpx-fab';
     buttonEl.className = 'rpx-fab';
     buttonEl.title = 'RP Explorer';
     buttonEl.innerHTML = `<i class="fa-solid fa-compass"></i>`;
+
+    // Inline critical styles — independent of the stylesheet.
+    Object.assign(buttonEl.style, {
+        position: 'fixed',
+        right: '14px',
+        bottom: '110px',
+        zIndex: '99999',
+        width: '52px',
+        height: '52px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: '50%',
+        color: '#fff',
+        fontSize: '22px',
+        cursor: 'grab',
+        touchAction: 'none',
+        userSelect: 'none',
+        webkitUserSelect: 'none',
+        boxShadow: '0 4px 14px rgba(0,0,0,0.45)',
+        background: 'var(--SmartThemeQuoteColor, #6c8cff)',
+    });
+
     document.body.appendChild(buttonEl);
 
     restoreButtonPosition();
