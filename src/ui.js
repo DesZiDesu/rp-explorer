@@ -22,8 +22,11 @@ let activeTab = 'gallery';
  *  BOOTSTRAP
  * ------------------------------------------------------------------ */
 
+let resizeBound = false;
+
 export async function buildUI() {
     ensureButton();
+    installResizeClamp();
     await injectPanel();
     // Re-render the open tab whenever an update lands.
     document.addEventListener('rpExplorer:updated', () => {
@@ -100,6 +103,22 @@ export function ensureButton() {
 
     const r = buttonEl.getBoundingClientRect();
     logger.info('Floating button created at', JSON.stringify({ x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height) }));
+}
+
+/** Keep the button fully on-screen when the window/orientation changes. */
+function installResizeClamp() {
+    if (resizeBound) return;
+    resizeBound = true;
+    window.addEventListener('resize', () => {
+        if (!buttonEl || !buttonEl.isConnected) return;
+        const r = buttonEl.getBoundingClientRect();
+        const x = Math.min(Math.max(0, r.left), Math.max(0, window.innerWidth - r.width));
+        const y = Math.min(Math.max(0, r.top), Math.max(0, window.innerHeight - r.height));
+        buttonEl.style.left = `${x}px`;
+        buttonEl.style.top = `${y}px`;
+        buttonEl.style.right = 'auto';
+        buttonEl.style.bottom = 'auto';
+    });
 }
 
 /** Restore the saved button position (if any), keeping it within the viewport. */
@@ -238,12 +257,15 @@ function setUpdateButton(btn, busy) {
         : `<i class="fa-solid fa-rotate"></i> Update`;
 }
 
-/** Show / hide / toggle the panel. */
+/** Show / hide / toggle the full-screen panel. */
 export function togglePanel(force) {
     if (!panelEl) return;
     const open = force ?? !panelEl.classList.contains('rpx-open');
     panelEl.classList.toggle('rpx-open', open);
     getSettings().panelOpen = open;
+    // Hide the floating button while the full-screen page is open so it
+    // doesn't overlap the content; restore it when the page closes.
+    if (buttonEl) buttonEl.style.setProperty('display', open ? 'none' : 'flex', 'important');
     if (open) renderActiveTab();
 }
 
@@ -282,7 +304,7 @@ function inlinePanelHtml() {
             <span class="rpx-panel-title"><i class="fa-solid fa-compass"></i> RP Explorer</span>
             <div class="rpx-panel-header-actions">
                 <button class="rpx-btn rpx-btn-primary rpx-update-now" type="button"><i class="fa-solid fa-rotate"></i> Update</button>
-                <button class="rpx-icon-btn rpx-close" type="button"><i class="fa-solid fa-xmark"></i></button>
+                <button class="rpx-btn rpx-close" type="button"><i class="fa-solid fa-xmark"></i> Close</button>
             </div>
         </div>
         <div class="rpx-tabs">
