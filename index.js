@@ -18,6 +18,7 @@ import { TEMPLATE_PATH } from './src/constants.js';
 import { initSettings, getSettings, saveSettings, getChatData } from './src/storage.js';
 import { buildUI, togglePanel, ensureButton } from './src/ui.js';
 import { runUpdate, maybeAutoUpdate, injectMemory } from './src/memory.js';
+import { logger, installGlobalHandlers, runDiagnostics, showLogModal } from './src/logger.js';
 
 /* ------------------------------------------------------------------ *
  *  SETTINGS PANEL (native SillyTavern extension drawer)
@@ -71,6 +72,7 @@ function wireSettings() {
 
     document.getElementById('rpx-open-panel')?.addEventListener('click', () => togglePanel(true));
     document.getElementById('rpx-update-now-settings')?.addEventListener('click', () => runUpdate());
+    document.getElementById('rpx-diagnostics')?.addEventListener('click', () => { runDiagnostics(); showLogModal(); });
 }
 
 /* ------------------------------------------------------------------ *
@@ -123,18 +125,27 @@ function wireEvents() {
  * ------------------------------------------------------------------ */
 
 (async function init() {
-    try {
-        initSettings();
-        await buildUI();
-        await injectSettings();
-        injectWandButton();
-        wireEvents();
+    installGlobalHandlers();
+    logger.info('Initialising RP Explorer…');
 
-        // Seed memory injection for the currently loaded chat.
-        injectMemory();
+    // Each step is wrapped so one failure can't abort the rest (e.g. a memory
+    // error must not prevent the floating button from rendering), and the log
+    // pinpoints exactly which step failed.
+    const step = async (name, fn) => {
+        try {
+            await fn();
+            logger.info('init ok:', name);
+        } catch (err) {
+            logger.error(`init FAILED at ${name}:`, err);
+        }
+    };
 
-        console.log('[RP Explorer] loaded.');
-    } catch (err) {
-        console.error('[RP Explorer] failed to initialise:', err);
-    }
+    await step('settings', () => initSettings());
+    await step('buildUI', () => buildUI());
+    await step('settingsPanel', () => injectSettings());
+    await step('wandButton', () => injectWandButton());
+    await step('events', () => wireEvents());
+    await step('injectMemory', () => injectMemory());
+
+    logger.info('RP Explorer loaded.');
 })();
