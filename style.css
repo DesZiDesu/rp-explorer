@@ -319,5 +319,34 @@ textarea.rpx-input { min-height: 72px; resize: vertical; }
     .rpx-modal { max-width: 480px; border-radius: 18px; }
 }
 
+/* ----------------------------------------------------------------- *
+ *  LOGS TAB
+ * ----------------------------------------------------------------- */
+.rpx-log-toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.rpx-log-toolbar .rpx-btn { flex: 1; min-width: 90px; justify-content: center; }
+.rpx-log-container { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 0.8rem; }
+.rpx-log-list { display: flex; flex-direction: column; gap: 2px; }
+.rpx-log-row {
+    display: flex;
+    gap: 6px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.03);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+.rpx-log-time { opacity: 0.6; flex: 0 0 auto; }
+.rpx-log-lvl { font-weight: 700; flex: 0 0 auto; }
+.rpx-log-msg { flex: 1; }
+
+/* Log modal rows reuse the same classes (modal sets its own colours inline). */
+#rpx-log-modal button {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    cursor: pointer;
+}
+
 /* Wand menu item icon spacing parity with native items. */
 #rpx-wand-button { cursor: pointer; }

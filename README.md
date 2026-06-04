@@ -60,6 +60,13 @@ the exact message:
 - A private note area for you. **The AI never reads or writes it** — the update
   pipeline never touches `chatData.diary`; `src/diary.js` is the only writer.
 
+### Logs & diagnostics (Tab 3 + settings)
+- A **Logs** tab and a **Diagnostics & Logs** button in the settings drawer.
+- Captures extension events + uncaught errors (persisted to `localStorage`).
+- **Run Diagnostics** inspects the floating button (computed styles, on-screen
+  position, `elementFromPoint` coverage, problematic ancestor transforms) so UI
+  issues can be debugged on-device without a desktop console.
+
 ### Data scope: per-chat vs. global
 - **Per-chat isolation**: all generated memory (gallery overlay, relationships,
   context summary, diary) lives in `chat_metadata`, so switching or deleting a
@@ -89,6 +96,7 @@ rp-explorer/
 │   ├── memory.js          # Update flow, auto-update, memory injection, toast
 │   ├── gallery.js         # Tab 1: gallery + relationship tracker
 │   ├── diary.js           # Tab 2: user-only diary
+│   ├── logger.js          # Logs + on-device diagnostics (Logs tab / modal)
 │   └── ui.js              # Draggable FAB + panel + tab switching
 ├── README.md
 └── LICENSE

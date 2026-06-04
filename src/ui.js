@@ -12,6 +12,7 @@ import { getSettings, saveSettings } from './storage.js';
 import { renderGallery } from './gallery.js';
 import { renderDiary } from './diary.js';
 import { runUpdate, getIsUpdating } from './memory.js';
+import { logger, runDiagnostics, renderLogsInto } from './logger.js';
 
 let panelEl = null;
 let buttonEl = null;
@@ -58,40 +59,58 @@ export function ensureButton() {
     buttonEl.title = 'RP Explorer';
     buttonEl.innerHTML = `<i class="fa-solid fa-compass"></i>`;
 
-    // Inline critical styles — independent of the stylesheet.
-    Object.assign(buttonEl.style, {
+    // Inline critical styles forced with !important so neither a theme nor a
+    // missing stylesheet can hide the button. A solid colour + light ring make
+    // it visible even if the icon font fails to load.
+    // Visibility-critical props are forced with !important so neither a theme
+    // nor a missing stylesheet can hide the button. Position offsets are left
+    // as normal inline styles so the drag handler can reposition freely.
+    const forced = {
         position: 'fixed',
-        right: '14px',
-        bottom: '110px',
-        zIndex: '99999',
-        width: '52px',
-        height: '52px',
+        'z-index': '2147483647',
+        width: '54px',
+        height: '54px',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: '50%',
-        color: '#fff',
-        fontSize: '22px',
+        'align-items': 'center',
+        'justify-content': 'center',
+        'border-radius': '50%',
+        color: '#ffffff',
+        'font-size': '22px',
+        'font-weight': '700',
+        background: '#5b7cfa',
+        border: '2px solid rgba(255,255,255,0.85)',
+        'box-shadow': '0 4px 16px rgba(0,0,0,0.5)',
         cursor: 'grab',
-        touchAction: 'none',
-        userSelect: 'none',
-        webkitUserSelect: 'none',
-        boxShadow: '0 4px 14px rgba(0,0,0,0.45)',
-        background: 'var(--SmartThemeQuoteColor, #6c8cff)',
-    });
+        'touch-action': 'none',
+        'user-select': 'none',
+        '-webkit-user-select': 'none',
+        visibility: 'visible',
+        opacity: '1',
+        'pointer-events': 'auto',
+    };
+    for (const [k, v] of Object.entries(forced)) buttonEl.style.setProperty(k, v, 'important');
+    // Default corner position (overridable by drag / restore).
+    buttonEl.style.right = '14px';
+    buttonEl.style.bottom = '110px';
 
     document.body.appendChild(buttonEl);
 
     restoreButtonPosition();
     makeDraggable(buttonEl, () => togglePanel());
+
+    const r = buttonEl.getBoundingClientRect();
+    logger.info('Floating button created at', JSON.stringify({ x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height) }));
 }
 
-/** Restore the saved button position (if any). */
+/** Restore the saved button position (if any), keeping it within the viewport. */
 function restoreButtonPosition() {
     const pos = getSettings().buttonPosition;
     if (pos && pos.x != null && pos.y != null) {
-        buttonEl.style.left = `${pos.x}px`;
-        buttonEl.style.top = `${pos.y}px`;
+        // Clamp so a stale/off-screen saved position can never hide the button.
+        const x = Math.min(Math.max(0, pos.x), Math.max(0, window.innerWidth - 54));
+        const y = Math.min(Math.max(0, pos.y), Math.max(0, window.innerHeight - 54));
+        buttonEl.style.left = `${x}px`;
+        buttonEl.style.top = `${y}px`;
         buttonEl.style.right = 'auto';
         buttonEl.style.bottom = 'auto';
     }
@@ -183,6 +202,8 @@ async function injectPanel() {
     const wrap = document.createElement('div');
     wrap.innerHTML = html;
     panelEl = wrap.firstElementChild;
+    // Force a very high z-index so the panel can't be buried under theme UI.
+    panelEl.style.setProperty('z-index', '2147483646', 'important');
     document.body.appendChild(panelEl);
 
     wirePanel();
@@ -233,6 +254,24 @@ function renderActiveTab() {
         t.classList.toggle('rpx-active', t.dataset.tab === activeTab));
     if (activeTab === 'gallery') renderGallery(body);
     else if (activeTab === 'diary') renderDiary(body);
+    else if (activeTab === 'logs') renderLogsTab(body);
+}
+
+/** Render the Logs tab (with diagnostics/refresh/clear controls). */
+function renderLogsTab(body) {
+    body.innerHTML = `
+        <div class="rpx-log-toolbar">
+            <button class="rpx-btn rpx-log-diag" type="button"><i class="fa-solid fa-stethoscope"></i> Diagnostics</button>
+            <button class="rpx-btn rpx-log-refresh" type="button"><i class="fa-solid fa-rotate"></i> Refresh</button>
+            <button class="rpx-btn rpx-log-clear" type="button"><i class="fa-solid fa-trash"></i> Clear</button>
+        </div>
+        <div class="rpx-log-container"></div>
+    `;
+    const container = body.querySelector('.rpx-log-container');
+    renderLogsInto(container);
+    body.querySelector('.rpx-log-diag')?.addEventListener('click', () => { runDiagnostics(); renderLogsInto(container); });
+    body.querySelector('.rpx-log-refresh')?.addEventListener('click', () => renderLogsInto(container));
+    body.querySelector('.rpx-log-clear')?.addEventListener('click', () => { logger.clear(); renderLogsInto(container); });
 }
 
 /** Inline fallback if the HTML template can't be fetched. */
@@ -249,6 +288,7 @@ function inlinePanelHtml() {
         <div class="rpx-tabs">
             <button class="rpx-tab rpx-active" data-tab="gallery" type="button"><i class="fa-solid fa-users"></i> Gallery</button>
             <button class="rpx-tab" data-tab="diary" type="button"><i class="fa-solid fa-book"></i> Diary</button>
+            <button class="rpx-tab" data-tab="logs" type="button"><i class="fa-solid fa-terminal"></i> Logs</button>
         </div>
         <div class="rpx-tab-body"></div>
     </div>`;
