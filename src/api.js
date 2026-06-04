@@ -77,7 +77,22 @@ export async function requestUpdate(prompt) {
     }
 
     if (settings.useCustomApi && settings.customApiUrl) {
-        return requestCustomEndpoint(settings, systemPrompt, prompt.user);
+        try {
+            return await requestCustomEndpoint(settings, systemPrompt, prompt.user);
+        } catch (err) {
+            // A direct browser fetch to a third-party API usually fails with a
+            // CORS/network TypeError. Fall back to SillyTavern's active backend
+            // (server-side, no CORS) so the update still succeeds.
+            const isNetwork = err instanceof TypeError;
+            console.warn('[RP Explorer] Custom endpoint failed, falling back to active API.', err);
+            if (typeof getContext().generateQuietPrompt === 'function') {
+                if (isNetwork && typeof toastr !== 'undefined') {
+                    toastr.info('Custom endpoint unreachable (likely CORS) — using SillyTavern\'s active API instead.');
+                }
+                return requestDefaultApi(systemPrompt, prompt.user);
+            }
+            throw err;
+        }
     }
     return requestDefaultApi(systemPrompt, prompt.user);
 }
@@ -134,18 +149,16 @@ async function requestDefaultApi(systemPrompt, userPrompt) {
         throw new Error('No custom API configured and generateQuietPrompt is unavailable.');
     }
 
-    // Fold system + user into one quiet prompt -> still a single API call.
+    // Fold system + user into one quiet prompt -> still a single API call that
+    // routes through SillyTavern's currently active connection (the Custom
+    // OpenAI-compatible profile, server-side, so no CORS).
     const combined = `${systemPrompt}\n\n${userPrompt}`;
 
-    // generateQuietPrompt signatures have varied across versions; try the
-    // modern object form first, then fall back to the positional form.
-    try {
-        return await context.generateQuietPrompt({
-            quietPrompt: combined,
-            quietToLoud: false,
-            skipWIAN: true,
-        });
-    } catch {
-        return await context.generateQuietPrompt(combined, false, true);
+    // Use the positional signature, which is stable across ST versions:
+    //   generateQuietPrompt(quiet_prompt, quietToLoud, skipWIAN, ...)
+    const result = await context.generateQuietPrompt(combined, false, true);
+    if (!result || !String(result).trim()) {
+        throw new Error('The active SillyTavern API returned an empty response.');
     }
+    return String(result);
 }

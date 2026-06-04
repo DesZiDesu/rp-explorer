@@ -16,7 +16,7 @@ import { eventSource, event_types } from '../../../../script.js';
 
 import { TEMPLATE_PATH } from './src/constants.js';
 import { initSettings, getSettings, saveSettings, getChatData } from './src/storage.js';
-import { buildUI, togglePanel } from './src/ui.js';
+import { buildUI, togglePanel, ensureButton } from './src/ui.js';
 import { runUpdate, maybeAutoUpdate, injectMemory } from './src/memory.js';
 
 /* ------------------------------------------------------------------ *
@@ -100,8 +100,14 @@ function wireEvents() {
         // Touch chat data so defaults are created for the new chat.
         getChatData();
         injectMemory();
+        ensureButton(); // re-assert the floating button after layout changes
         document.dispatchEvent(new CustomEvent('rpExplorer:updated'));
     });
+
+    // App fully ready -> make sure the floating button is present.
+    if (event_types.APP_READY) {
+        eventSource.on(event_types.APP_READY, ensureButton);
+    }
 
     // After each AI message, consider an auto-update.
     const onNewMessage = () => maybeAutoUpdate();
