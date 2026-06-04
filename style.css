@@ -72,7 +72,13 @@
     border-bottom: 1px solid var(--rpx-border);
 }
 .rpx-panel-title { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-.rpx-panel-header-actions { display: flex; align-items: center; gap: 8px; }
+.rpx-panel-header-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.rpx-close {
+    background: rgba(255, 80, 80, 0.18);
+    border-color: rgba(255, 80, 80, 0.5);
+    color: var(--rpx-fg);
+}
+.rpx-close:active { background: rgba(255, 80, 80, 0.3); }
 
 /* ----------------------------------------------------------------- *
  *  TABS
@@ -304,16 +310,16 @@ textarea.rpx-input { min-height: 72px; resize: vertical; }
  *  TABLET / DESKTOP UPGRADE
  * ----------------------------------------------------------------- */
 @media (min-width: 768px) {
-    .rpx-panel {
-        inset: auto;
-        top: 50%;
-        right: 24px;
-        transform: translateY(-50%);
-        width: 420px;
-        height: min(80vh, 720px);
-        border: 1px solid var(--rpx-border);
-        border-radius: 18px;
-        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+    /* The panel stays a full-screen page on web too, but its inner content is
+       centered and width-capped for comfortable reading on large screens. */
+    .rpx-panel-header,
+    .rpx-tabs,
+    .rpx-tab-body {
+        max-width: 900px;
+        margin-left: auto;
+        margin-right: auto;
+        width: 100%;
+        box-sizing: border-box;
     }
     .rpx-modal-overlay { align-items: center; }
     .rpx-modal { max-width: 480px; border-radius: 18px; }

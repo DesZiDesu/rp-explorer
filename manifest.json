@@ -7,7 +7,7 @@
     "js": "index.js",
     "css": "style.css",
     "author": "deszidesu",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "homePage": "https://github.com/deszidesu/rp-explorer",
     "auto_update": true
 }
